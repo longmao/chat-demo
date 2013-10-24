@@ -1,30 +1,46 @@
-  $(document).ready(function() {
-    var from, socket, to, $users_list = $("#users_list"),PEM = {};
+(function() {
+    var from, socket, to,
+        PEM = {},
+        $win = $(window),
+        $body = $("body"),
+        $users_list = $("#users_list"),
+        $chat_msg_container = $("#chat-msg-container")
     socket = io.connect();
     from = $.cookie("user");
-    to = "all";
+    to = "";
     templ = doT.template('' +
-      '<li class="{{=it.self ? "self" : ""}}">' +
-        '<div class="avatar">' +
-          '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image">' +
-        '</div>' +
-        '<div class="cont">' +
-          '<h3>' +
-            '<span class="screen_name">{{=it.screen_name}}</span>' +
-            '<span class="time">{{=it.date}}</span>' +
-          '</h3>' +
-          '<p>{{=it.msg}}</p>' +
-        '</div>' +
-      '</li>');
+      '{{? !it.sysInfo }}' +
+        '<li class="{{=it.self ? "self" : ""}}">' +
+          '<div class="avatar">' +
+            '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image">' +
+          '</div>' +
+          '<div class="cont">' +
+            '<h3>' +
+              '<span class="screen_name">{{=it.screen_name}}</span>' +
+              '<span class="time">{{=it.date}}</span>' +
+            '</h3>' +
+            '<p>{{=it.msg}}</p>' +
+          '</div>' +
+        '</li>' +
+      '{{??}}' +
+        '<li class="sysInfo">' +
+          '<p class="cont">{{=it.msg}} <span class="time">{{=it.date}}</span></p>' +
+        '</li>' +
+      '{{?}}'
+        );
 
     PEM = {
       flushUsers:function(users){
         //遍历生成用户在线列表
+        users = _.filter(users,function(user){ return user.name !== from })
         var $ul = $("<ul></ul>")
-        for (var i in users) {
+        _.forEach(users,function(user){
           $ul.append(
-            '<li data-user="' + users[i].name + '" ><a href="javascript:;"><img width="30" height="30" class="img-rounded" src="images/default-30.gif" alt="placeholder+image"> ' + users[i].name + ' <span class="badge" style="display:none"></span></a></li>');
-        }
+            '<li data-user="' + user.name + '" class="online"><a href="javascript:;"><img width="30" height="30" class="img-rounded" src="images/default-30.gif" alt="placeholder+image"> ' + user.name + ' <span class="badge pull-right" style="display:none"></span></a></li>');
+        })
+        $ul.find("li:last").addClass("last")
+        //如果当前用户重新上线，设置用户为选中状态
+        if(to) $ul.find("li[data-user='" + to + "']").addClass("active")
         $users_list.html($ul.html())
       },
       initChatPanel:function(users){
@@ -32,7 +48,7 @@
         for (var i in users) {
           $div.append("<ul class='contents' style='display:none' id='contents_" + users[i].name + "'></ul>")
         }
-        $div.append("<ul class='contents' style='' id='contents_all'> </ul>");
+        //$div.append("<ul class='contents' style='' id='contents_all'> </ul>");
         $(".chat-msg-panel").html($div.html())
       },
       showSayTo:function(){
@@ -42,9 +58,11 @@
       },
       appendChatMsg:function(data){
         var id = data.from === from ? to : data.from
-        var $contents = $("#contents_" + id);
-        var $chat_msg_panel = $(".chat-msg-panel")
+        var $chat_msg_panel = $(".chat-msg-panel");
+        var $contents = $chat_msg_panel.find("#contents_" + id);
+
         $contents.append(templ({
+          sysInfo:data.sysInfo || false,
           self:data.from === from,
           screen_name: data.from,
           date:PEM.helper.now(),
@@ -68,6 +86,7 @@
           $this.addClass("active").siblings("li").removeClass("active")
           $this.find(".badge").text("").hide();
           PEM.showSayTo();
+          $chat_msg_container.show()
           $("#contents_"+to).show().siblings("ul.contents").hide()
           $("form#chatForm").find("input[type='text']").focus()
         })
@@ -93,16 +112,47 @@
           //清空输入框并获得焦点
           $chatForm_text.val("").focus();
         });
+
+        $(window).bind('beforeunload',function(){
+          //return '刷新页面将会改变你的在线状态，是否要继续？';
+        });
       },
       bindSocket:function(){
         socket.emit("online", {
           user: from
         });
         
+        var once = true;
         socket.on("online",function(data){
           PEM.flushUsers(data.users);
-          PEM.showSayTo();
-          PEM.initChatPanel(data.users)
+
+          if(data.user === to) {
+            PEM.appendChatMsg({
+              sysInfo: true,
+              from: from,
+              msg: '系统消息：用户' + data.user + '上线了',
+              to: to
+            })
+          }
+
+
+          if(once) {
+            //
+            PEM.initChatPanel(data.users)
+            once = false
+          }else{
+            //增加新在线用户chat-msg-panel
+            var $chat_msg_panel = $(".chat-msg-panel");
+            $chat_msg_panel
+              .findOrAppend(
+                "#contents_" + data.user,
+                "<ul class='contents' style='display:none' id='contents_" + data.user + "'></ul>",
+                function(){
+                }
+              )
+          }
+
+
         });
 
         socket.on('say', function (data) {
@@ -115,14 +165,43 @@
         });
 
         socket.on('offline', function (data) {
+          //
+          if(data.user === to) {
+            PEM.appendChatMsg({
+              sysInfo: true,
+              from: from,
+              msg: '系统消息：用户' + data.user + '下线了',
+              to: to
+            })
+          }
           PEM.flushUsers(data.users);
         });
       },
       init:function(){
+        PEM.helper.init();
         PEM.bindEvent();
         PEM.bindSocket();
       },
       helper:{
+        init:function(){
+          $.extend($.fn, {
+            findOrAppend: function(selector, template, locals, callback) {
+              var $el = $.fn.find.call(this, selector)
+              if ('function' === typeof locals) {
+                callback = locals
+                locals = {}
+              }
+              if (!$el.length) {
+                locals = locals || {}
+                $el = $('function' === typeof template ? template(locals) : template).appendTo(this)
+                callback && callback.call($el, $el, true)
+              } else {
+                callback && callback.call($el, $el, false)
+              }
+              return this
+            }
+          });
+        },
         now:function(){
           var date = new Date();
           var time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds());
@@ -132,5 +211,6 @@
     }
 
     PEM.init();
-  });
+}).call(this);
+
 
