@@ -22,13 +22,14 @@ module.exports = function (grunt) {
     app: 'app',
     dist: 'dist'
   };
-
+  var name = '<%= pkg.name %>-v<%= pkg.version%>';  
   try {
     yeomanConfig.app = require('./bower.json').appPath || yeomanConfig.app;
   } catch (e) {}
 
   grunt.initConfig({
     yeoman: yeomanConfig,
+    pkg: grunt.file.readJSON('package.json'),
     watch: {
       coffee: {
         files: ['<%= yeoman.app %>/scripts/{,*/}*.coffee'],
@@ -354,12 +355,18 @@ module.exports = function (grunt) {
       }
     },
     uglify: {
-      dist: {
-        files: {
-          '<%= yeoman.dist %>/scripts/scripts.js': [
-            '<%= yeoman.dist %>/scripts/scripts.js'
-          ]
-        }
+      options : {
+        banner:'/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+      },
+      main:{
+        files: [
+          {
+            expand: true,
+            cwd: 'app/',
+            src: ['scripts/*.js'],
+            dest: 'dist/'
+          }
+        ]
       }
     }
   });
@@ -392,11 +399,10 @@ module.exports = function (grunt) {
     'useminPrepare',
     'concurrent:dist',
     'autoprefixer',
-    'concat',
+    //'concat',
     'copy:dist',
-    'cdnify',
     'ngmin',
-    'cssmin',
+    //'cssmin',
     'uglify',
     'rev',
     'usemin'

@@ -68,7 +68,7 @@
           date:PEM.helper.now(),
           msg:data.msg
         }));
-        $chat_msg_panel.scrollTop($contents.height())
+        PEM.helper.scrollTop($chat_msg_panel,$contents.height())
       },
       updateUnread:function(data){
         var $list = $users_list.find("li[data-user='" + data.from + "']");
@@ -81,14 +81,18 @@
         $users_list.on("click","li",function(e) {
           e.preventDefault();
           var $this = $(this);
+          var $contents;
+          var $chat_msg_panel = $(".chat-msg-panel");
           //设置被双击的用户为说话对象
           to = $this.attr('data-user');
+          $contents = $("#contents_"+to);
           $this.addClass("active").siblings("li").removeClass("active")
           $this.find(".badge").text("").hide();
           PEM.showSayTo();
           $chat_msg_container.show()
-          $("#contents_"+to).show().siblings("ul.contents").hide()
+          $contents.show().siblings("ul.contents").hide()
           $("form#chatForm").find("input[type='text']").focus()
+          PEM.helper.scrollTop($chat_msg_panel,$contents.height())
         })
 
 
@@ -99,7 +103,7 @@
               $chatForm_text = $chatForm.find("input[type='text']");
           //获取要发送的信息
           var msg = $chatForm_text.val();
-          if (msg == "") return $chatForm_text.focus();
+          if ($.trim(msg) === "") return $chatForm_text.focus();
           //把发送的信息先添加到自己的浏览器 DOM 中
           PEM.appendChatMsg({
             from: from,
@@ -166,6 +170,7 @@
 
         socket.on('offline', function (data) {
           //
+          console.log("offline")
           if(data.user === to) {
             PEM.appendChatMsg({
               sysInfo: true,
@@ -206,6 +211,9 @@
           var date = new Date();
           var time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds());
           return time;
+        },
+        scrollTop:function($container,scroll_height){
+          $container.scrollTop(scroll_height)
         }
       }
     }

@@ -60,6 +60,7 @@ app.post('/signin', function (req, res) {
 var server = http.createServer(app);
 var i = 1
 var io = require('socket.io').listen(server);
+io.set('transports', ['xhr-polling']);
 io.sockets.on('connection', function (socket) {
 
   //有人上线
