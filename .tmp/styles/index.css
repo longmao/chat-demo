@@ -3,7 +3,10 @@ body {
 }
 
 #main-container {
+  width: 970px;
+  max-width: 970px;
   padding: 20px;
+  margin-top: 40px;
   background-color: #fff;
 }
 
@@ -24,18 +27,21 @@ a:focus {
 }
 
 .online-user h2 {
+  padding-top: 12px;
+  padding-bottom: 4px;
   padding-left: 20px;
   margin: 0;
-  line-height: 44px;
   color: #666;
-  border-bottom: 1px solid #d8d8d8;
 }
 
 .online-user .users_list {
+  height: 400px;
   padding: 0;
   margin-bottom: 0;
+  overflow-y: auto;
   list-style: none;
   background-color: #f5f5f5;
+  border-bottom: 1px solid #d8d8d8;
 }
 
 .online-user .users_list li {
@@ -45,7 +51,7 @@ a:focus {
 .online-user .users_list li a {
   display: block;
   min-height: 46px;
-  padding: 8px 0 0 20px;
+  padding: 8px 15px 0 20px;
   margin: 0;
   overflow: hidden;
   font-size: 14px;
@@ -54,7 +60,6 @@ a:focus {
   text-overflow: ellipsis;
   text-shadow: none;
   border-right: 2px solid transparent;
-  border-bottom: 1px solid #d8d8d8;
   -webkit-transition: border 0.218s;
   transition: border 0.218s;
 }
@@ -62,6 +67,21 @@ a:focus {
 .online-user .users_list li a img {
   margin-right: 4px;
   border-radius: 4px;
+}
+
+.online-user .users_list li a .badge {
+  margin-top: 8px;
+}
+
+.online-user .users_list li.online a {
+  padding-left: 46px;
+  background-image: url(../images/online.png);
+  background-position: 20px;
+  background-repeat: no-repeat;
+}
+
+.online-user .users_list li.last a {
+  border-bottom: 0 none;
 }
 
 .online-user .users_list li a:hover,
@@ -78,13 +98,16 @@ a:focus {
   color: #262626;
   text-shadow: none;
   background-color: #fff;
-  border-bottom: 1px solid #d8d8d8;
   border-right-color: #427fed;
 }
 
 .chat-container {
   margin: 0;
   border: 1px solid #d8d8d8;
+  -webkit-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 7px rgba(0, 0, 0, 0.15);
 }
 
 .chat-container .col-md-3,
@@ -98,11 +121,45 @@ a:focus {
   width: 232px;
   height: 700px;
   background-color: #f5f5f5;
-  border-left: 1px solid #d8d8d8;
+  border-right: 1px solid #d8d8d8;
+}
+
+.chat-container .col-md-3 .myself-block {
+  padding: 15px 20px;
+  overflow: hidden;
+  border-bottom: 1px solid #d5d5d5;
+}
+
+.chat-container .col-md-3 .myself-block img {
+  float: left;
+}
+
+.chat-container .col-md-3 .myself-block .cont {
+  margin-top: -4px;
+  margin-left: 60px;
+  overflow: hidden;
+}
+
+.chat-container .col-md-3 .myself-block .cont p {
+  margin: 0;
+}
+
+.chat-container .col-md-3 .myself-block .cont .screen_name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+}
+
+.chat-container .col-md-3 .myself-block .cont .desc {
+  color: #999;
 }
 
 .chat-container .col-md-9 {
   width: 696px;
+}
+
+.chat-container .col-md-9 .chat-msg-container {
+  display: none;
 }
 
 .chat-container .chat-msg-panel {
@@ -114,6 +171,15 @@ a:focus {
 .chat-container .chat-msg-panel ul {
   padding: 0;
   list-style: none;
+}
+
+.chat-container .chat-msg-panel ul li.sysInfo {
+  font-size: 13px;
+  background-color: #f5f5f5;
+}
+
+.chat-container .chat-msg-panel ul li.sysInfo p {
+  margin: 0;
 }
 
 .chat-container .chat-msg-panel ul li {
@@ -135,11 +201,7 @@ a:focus {
   line-height: 1.4;
 }
 
-.chat-container .chat-msg-panel ul li .cont h3 span.screen_name {
-  font-weight: bold;
-}
-
-.chat-container .chat-msg-panel ul li .cont h3 span.time {
+.chat-container .chat-msg-panel ul li .cont span.time {
   margin-left: 10px;
   color: #999;
 }
@@ -147,6 +209,10 @@ a:focus {
 .chat-container .chat-msg-panel ul li .cont p {
   margin-top: 4px;
   color: #666;
+}
+
+.chat-container .chat-msg-panel ul li.last {
+  padding-top: 15px;
 }
 
 .chat-container .chat-msg-panel ul li.self {
@@ -168,140 +234,4 @@ a:focus {
   float: left;
   width: 606px;
   padding-right: 15px;
-}
-
-@media (max-width: 1199px) and (min-width: 980px) {
-  .bs-docs-sidenav > li > a {
-    width: 180 \9;
-  }
-}
-
-/* Template-specific stuff
- *
- * Customizations just for the template—these are not necessary for anything
- * with disabling the responsiveness.
- */
-
-/* Account for fixed navbar */
-
-body {
-  padding-top: 70px;
-  padding-bottom: 30px;
-}
-
-/* Finesse the page header spacing */
-
-.page-header {
-  margin-bottom: 30px;
-}
-
-.page-header .lead {
-  margin-bottom: 10px;
-}
-
-/* Non-responsive overrides
- *
- * Utilitze the following CSS to disable the responsive-ness of the container,
- * grid system, and navbar.
- */
-
-/* Reset the container */
-
-.container {
-  width: 970px;
-  max-width: none !important;
-}
-
-/* Demonstrate the grids */
-
-.col-xs-4 {
-  padding-top: 15px;
-  padding-bottom: 15px;
-  background-color: #eee;
-  background-color: rgba(86, 61, 124, 0.15);
-  border: 1px solid #ddd;
-  border: 1px solid rgba(86, 61, 124, 0.2);
-}
-
-.container .navbar-header,
-.container .navbar-collapse {
-  margin-right: 0;
-  margin-left: 0;
-}
-
-/* Always float the navbar header */
-
-.navbar-header {
-  float: left;
-}
-
-/* Undo the collapsing navbar */
-
-.navbar-collapse {
-  display: block !important;
-  height: auto !important;
-  padding-bottom: 0;
-  overflow: visible !important;
-}
-
-.navbar-toggle {
-  display: none;
-}
-
-.navbar-brand {
-  margin-left: -15px;
-}
-
-/* Always apply the floated nav */
-
-.navbar-nav {
-  float: left;
-  margin: 0;
-}
-
-.navbar-nav > li {
-  float: left;
-}
-
-.navbar-nav > li > a {
-  padding: 15px;
-}
-
-/* Redeclare since we override the float above */
-
-.navbar-nav.navbar-right {
-  float: right;
-}
-
-/* Undo custom dropdowns */
-
-.navbar .open .dropdown-menu {
-  position: absolute;
-  float: left;
-  background-color: #fff;
-  border: 1px solid #cccccc;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-width: 0 1px 1px;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-}
-
-.navbar .open .dropdown-menu > li > a {
-  color: #333;
-}
-
-.navbar .open .dropdown-menu > li > a:hover,
-.navbar .open .dropdown-menu > li > a:focus,
-.navbar .open .dropdown-menu > .active > a,
-.navbar .open .dropdown-menu > .active > a:hover,
-.navbar .open .dropdown-menu > .active > a:focus {
-  color: #fff !important;
-  background-color: #428bca !important;
-}
-
-.navbar .open .dropdown-menu > .disabled > a,
-.navbar .open .dropdown-menu > .disabled > a:hover,
-.navbar .open .dropdown-menu > .disabled > a:focus {
-  color: #999 !important;
-  background-color: transparent !important;
 }
