@@ -4,14 +4,13 @@
  */
 
 var express = require('express')
-  , routes = require('./routes')
-  , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
 var app = express();
 
 
 var chatModel = require("./model/chat")
+
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -30,6 +29,12 @@ app.use(express.static(path.join(__dirname, 'app')));
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
+
+
+//load route
+require('./routes/histroy')(app,chatModel);
+
+
 
 var users = {};//存储在线用户列表的对象
 
@@ -117,12 +122,7 @@ io.sockets.on('connection', function (socket) {
         }
       })
 
-      chatModel.find({
-        from : {$in: [ data.from, data.to]},
-        to : {$in: [ data.from, data.to]}
-      },function(err,search){
-        console.log(search)
-      })
+
 
     }
   });

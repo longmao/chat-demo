@@ -68,7 +68,7 @@
           date:PEM.helper.now(),
           msg:data.msg
         }));
-        PEM.helper.scrollTop($chat_msg_panel,$contents.height())
+        PEM.util.scrollTop($chat_msg_panel,$contents.height())
       },
       updateUnread:function(data){
         var $list = $users_list.find("li[data-user='" + data.from + "']");
@@ -92,7 +92,7 @@
           $chat_msg_container.show()
           $contents.show().siblings("ul.contents").hide()
           $("form#chatForm").find("input[type='text']").focus()
-          PEM.helper.scrollTop($chat_msg_panel,$contents.height())
+          PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
 
 
@@ -183,11 +183,11 @@
         });
       },
       init:function(){
-        PEM.helper.init();
+        PEM.util.init();
         PEM.bindEvent();
         PEM.bindSocket();
       },
-      helper:{
+      util:{
         init:function(){
           $.extend($.fn, {
             findOrAppend: function(selector, template, locals, callback) {
@@ -206,11 +206,6 @@
               return this
             }
           });
-        },
-        now:function(){
-          var date = new Date();
-          var time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds());
-          return time;
         },
         scrollTop:function($container,scroll_height){
           $container.scrollTop(scroll_height)
