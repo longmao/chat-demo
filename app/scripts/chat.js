@@ -1,6 +1,5 @@
 (function() {
     var from, socket, to,
-        PEM = {},
         $win = $(window),
         $body = $("body"),
         $users_list = $("#users_list"),
@@ -29,7 +28,7 @@
       '{{?}}'
         );
 
-    PEM = {
+    PEM.chat = {
       flushUsers:function(users){
         //遍历生成用户在线列表
         users = _.filter(users,function(user){ return user.name !== from })
@@ -88,7 +87,7 @@
           $contents = $("#contents_"+to);
           $this.addClass("active").siblings("li").removeClass("active")
           $this.find(".badge").text("").hide();
-          PEM.showSayTo();
+          PEM.chat.showSayTo();
           $chat_msg_container.show()
           $contents.show().siblings("ul.contents").hide()
           $("form#chatForm").find("input[type='text']").focus()
@@ -105,7 +104,7 @@
           var msg = $chatForm_text.val();
           if ($.trim(msg) === "") return $chatForm_text.focus();
           //把发送的信息先添加到自己的浏览器 DOM 中
-          PEM.appendChatMsg({
+          PEM.chat.appendChatMsg({
             from: from,
             msg: msg,
             to: to
@@ -128,10 +127,10 @@
         
         var once = true;
         socket.on("online",function(data){
-          PEM.flushUsers(data.users);
+          PEM.chat.flushUsers(data.users);
 
           if(data.user === to) {
-            PEM.appendChatMsg({
+            PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
               msg: '系统消息：用户' + data.user + '上线了',
@@ -142,7 +141,7 @@
 
           if(once) {
             //
-            PEM.initChatPanel(data.users)
+            PEM.chat.initChatPanel(data.users)
             once = false
           }else{
             //增加新在线用户chat-msg-panel
@@ -160,60 +159,36 @@
         });
 
         socket.on('say', function (data) {
-          PEM.appendChatMsg({
+          PEM.chat.appendChatMsg({
             from: data.from,
             msg: data.msg,
             to:data.to
           })
-          PEM.updateUnread(data)
+          PEM.chat.updateUnread(data)
         });
 
         socket.on('offline', function (data) {
           //
           console.log("offline")
           if(data.user === to) {
-            PEM.appendChatMsg({
+            PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
               msg: '系统消息：用户' + data.user + '下线了',
               to: to
             })
           }
-          PEM.flushUsers(data.users);
+          PEM.chat.flushUsers(data.users);
         });
       },
       init:function(){
         PEM.util.init();
-        PEM.bindEvent();
-        PEM.bindSocket();
-      },
-      util:{
-        init:function(){
-          $.extend($.fn, {
-            findOrAppend: function(selector, template, locals, callback) {
-              var $el = $.fn.find.call(this, selector)
-              if ('function' === typeof locals) {
-                callback = locals
-                locals = {}
-              }
-              if (!$el.length) {
-                locals = locals || {}
-                $el = $('function' === typeof template ? template(locals) : template).appendTo(this)
-                callback && callback.call($el, $el, true)
-              } else {
-                callback && callback.call($el, $el, false)
-              }
-              return this
-            }
-          });
-        },
-        scrollTop:function($container,scroll_height){
-          $container.scrollTop(scroll_height)
-        }
+        PEM.chat.bindEvent();
+        PEM.chat.bindSocket();
       }
     }
 
-    PEM.init();
+    PEM.chat.init();
 }).call(this);
 
 

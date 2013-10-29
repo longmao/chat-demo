@@ -1,6 +1,6 @@
 
 (function(){
-  var helpers = function(){
+  var helper = function(){
     var that = this;
     that.now = function(date){
       var date = date || new Date();
@@ -10,11 +10,11 @@
   }
   if(typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
     module.exports = function(){
-      return new helpers()
+      return new helper()
     }
   }else{
     if(typeof PEM === "undefined") PEM = {}
-    PEM.helpers = new helpers()
+    PEM.helper = new helper()
   }
 
 }())
