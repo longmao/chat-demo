@@ -1,6 +1,5 @@
 (function() {
-    var from, socket, to,
-        PEM = {},
+    var from, socket, to,templ_chat_timeline,templ_chat_profile
         $win = $(window),
         $body = $("body"),
         $users_list = $("#users_list"),
@@ -8,12 +7,19 @@
     socket = io.connect();
     from = $.cookie("user");
     to = "";
-    templ = doT.template('' +
+    templ_chat_profile = doT.template('' +
+      '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image" style="">' +
+      '<div class="cont" >' +
+        '<div class="ops">' +
+          '<a href="#" class="skanHistory" data-user-to="{{=it.screen_name}}">聊天记录</a>' +
+        '</div>' +
+        '<p class="screen_name" ng-model="screen_name_to">{{=it.screen_name}}</p>' + 
+        '<p class="desc">{{=it.description}}</p>' +
+      '</div>'
+    );
+    templ_chat_timeline = doT.template('' +
       '{{? !it.sysInfo }}' +
         '<li class="{{=it.self ? "self" : ""}}">' +
-          '<div class="avatar">' +
-            '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image">' +
-          '</div>' +
           '<div class="cont">' +
             '<h3>' +
               '<span class="screen_name">{{=it.screen_name}}</span>' +
@@ -29,7 +35,7 @@
       '{{?}}'
         );
 
-    PEM = {
+    PEM.chat = {
       flushUsers:function(users){
         //遍历生成用户在线列表
         users = _.filter(users,function(user){ return user.name !== from })
@@ -38,6 +44,7 @@
           $ul.append(
             '<li data-user="' + user.name + '" class="online"><a href="javascript:;"><img width="30" height="30" class="img-rounded" src="images/default-30.gif" alt="placeholder+image"> ' + user.name + ' <span class="badge pull-right" style="display:none"></span></a></li>');
         })
+        $ul.find("li:first").addClass("first")
         $ul.find("li:last").addClass("last")
         //如果当前用户重新上线，设置用户为选中状态
         if(to) $ul.find("li[data-user='" + to + "']").addClass("active")
@@ -56,19 +63,64 @@
         $("#to").html(to);
         $("#from").parent().css("visibility","visible")
       },
+      renderProfile:function(data){
+        var $profile_to = $("#profile_to")
+        $profile_to.html(templ_chat_profile({
+          screen_name:data.to,
+          description:"description here"
+        }))
+      },
       appendChatMsg:function(data){
         var id = data.from === from ? to : data.from
         var $chat_msg_panel = $(".chat-msg-panel");
         var $contents = $chat_msg_panel.find("#contents_" + id);
 
-        $contents.append(templ({
+        $contents.append(templ_chat_timeline({
           sysInfo:data.sysInfo || false,
           self:data.from === from,
           screen_name: data.from,
           date:PEM.helper.now(),
           msg:data.msg
         }));
-        $chat_msg_panel.scrollTop($contents.height())
+        PEM.util.scrollTop($chat_msg_panel,$contents.height())
+      },
+      skanHistory: function(params){
+        var $chat_msg_history = $(".chat-msg-history");
+        var $ul = $("<ul></ul>")
+        var $div
+        $.getJSON("/history/"+params.to,function(datas){
+          _.forEach(datas,function(data){
+            $ul.append(
+                templ_chat_timeline({
+                  sysInfo:data.sysInfo || false,
+                  self:data.from === from,
+                  screen_name: data.from,
+                  date:data.date,
+                  msg:data.msg
+                })
+              )
+          })
+
+          $("ul.users_list").find(".active").removeClass("active")
+
+          $div = $ul
+            .before(
+              $('<p class="header">以下是你与<span class="to"></span>的聊天记录，<a href="javascript:;" class="">返回聊天</a></p>')
+                .find(".to").text(params.to).end()
+                .find("a").click(function(e){
+                  console.log(344)
+                  e.preventDefault()
+                  $("ul.users_list").find("li[data-user='" + params.to + "']").click()
+              }).end()
+            )
+
+          $chat_msg_history
+            .html($div)
+            .show()
+            .siblings(".chat-msg-content")
+            .hide()
+
+        })
       },
       updateUnread:function(data){
         var $list = $users_list.find("li[data-user='" + data.from + "']");
@@ -81,16 +133,35 @@
         $users_list.on("click","li",function(e) {
           e.preventDefault();
           var $this = $(this);
+          var $contents;
+          var $chat_msg_content = $(".chat-msg-content")
+          var $chat_msg_panel = $(".chat-msg-panel");
           //设置被双击的用户为说话对象
           to = $this.attr('data-user');
+          $contents = $("#contents_"+to);
           $this.addClass("active").siblings("li").removeClass("active")
           $this.find(".badge").text("").hide();
-          PEM.showSayTo();
+          PEM.chat.showSayTo();
+          PEM.chat.renderProfile({to:to});
           $chat_msg_container.show()
-          $("#contents_"+to).show().siblings("ul.contents").hide()
+            .find(".chat-msg-content").show()
+            .siblings().hide()
+            .end();
+          $contents.show().siblings("ul.contents").hide()
           $("form#chatForm").find("input[type='text']").focus()
+          PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
 
+        $chat_msg_container.on("click",".skanHistory",function(e){
+          e.preventDefault();
+          var $that = $(this),
+              data_user_from = from,
+              data_user_to = $that.attr("data-user-to")
+          PEM.chat.skanHistory({
+            to:data_user_to,
+            from:data_user_from
+          })
+        })
 
         //发话
         $("form#chatForm").submit(function(e) {
@@ -99,9 +170,9 @@
               $chatForm_text = $chatForm.find("input[type='text']");
           //获取要发送的信息
           var msg = $chatForm_text.val();
-          if (msg == "") return $chatForm_text.focus();
+          if ($.trim(msg) === "") return $chatForm_text.focus();
           //把发送的信息先添加到自己的浏览器 DOM 中
-          PEM.appendChatMsg({
+          PEM.chat.appendChatMsg({
             from: from,
             msg: msg,
             to: to
@@ -124,10 +195,10 @@
         
         var once = true;
         socket.on("online",function(data){
-          PEM.flushUsers(data.users);
+          PEM.chat.flushUsers(data.users);
 
           if(data.user === to) {
-            PEM.appendChatMsg({
+            PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
               msg: '系统消息：用户' + data.user + '上线了',
@@ -138,7 +209,7 @@
 
           if(once) {
             //
-            PEM.initChatPanel(data.users)
+            PEM.chat.initChatPanel(data.users)
             once = false
           }else{
             //增加新在线用户chat-msg-panel
@@ -156,61 +227,35 @@
         });
 
         socket.on('say', function (data) {
-          PEM.appendChatMsg({
+          PEM.chat.appendChatMsg({
             from: data.from,
             msg: data.msg,
             to:data.to
           })
-          PEM.updateUnread(data)
+          PEM.chat.updateUnread(data)
         });
 
         socket.on('offline', function (data) {
           //
           if(data.user === to) {
-            PEM.appendChatMsg({
+            PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
               msg: '系统消息：用户' + data.user + '下线了',
               to: to
             })
           }
-          PEM.flushUsers(data.users);
+          PEM.chat.flushUsers(data.users);
         });
       },
       init:function(){
-        PEM.helper.init();
-        PEM.bindEvent();
-        PEM.bindSocket();
-      },
-      helper:{
-        init:function(){
-          $.extend($.fn, {
-            findOrAppend: function(selector, template, locals, callback) {
-              var $el = $.fn.find.call(this, selector)
-              if ('function' === typeof locals) {
-                callback = locals
-                locals = {}
-              }
-              if (!$el.length) {
-                locals = locals || {}
-                $el = $('function' === typeof template ? template(locals) : template).appendTo(this)
-                callback && callback.call($el, $el, true)
-              } else {
-                callback && callback.call($el, $el, false)
-              }
-              return this
-            }
-          });
-        },
-        now:function(){
-          var date = new Date();
-          var time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds());
-          return time;
-        }
+        PEM.util.init();
+        PEM.chat.bindEvent();
+        PEM.chat.bindSocket();
       }
     }
 
-    PEM.init();
+    PEM.chat.init();
 }).call(this);
 
 

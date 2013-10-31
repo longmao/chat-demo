@@ -4,12 +4,13 @@
  */
 
 var express = require('express')
-  , routes = require('./routes')
-  , user = require('./routes/user')
   , http = require('http')
-  , path = require('path');
-
+  , path = require('path')
 var app = express();
+
+
+var chatModel = require("./model/chat")
+
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -28,6 +29,12 @@ app.use(express.static(path.join(__dirname, 'app')));
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
+
+
+//load route
+require('./routes/histroy')(app,chatModel);
+
+
 
 var users = {};//存储在线用户列表的对象
 
@@ -58,8 +65,9 @@ app.post('/signin', function (req, res) {
 });
 
 var server = http.createServer(app);
-var i = 1
+var i = 1;
 var io = require('socket.io').listen(server);
+//io.set('transports', ['xhr-polling']);
 io.sockets.on('connection', function (socket) {
 
   //有人上线
@@ -97,6 +105,25 @@ io.sockets.on('connection', function (socket) {
       //console.log("send to user: " + data.to)
       //console.log(io.sockets.socket(data.to))
       //io.sockets.socket(data.to).emit('say', data);
+
+      //save  chat model to MongoDB
+      var chat = new chatModel({
+        from : data.from,
+        to : data.to,
+        msg : data.msg
+      })
+
+      chat.save(function(err){
+        if (err) {
+          return err;
+        }
+        else {
+          console.log("chat saved!");
+        }
+      })
+
+
+
     }
   });
 

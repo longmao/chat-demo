@@ -1,0 +1,20 @@
+(function(){
+  var helper = function(){
+    var that = this;
+    that.now = function(date){
+      var date = date || new Date();
+      var time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + (date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds());
+      console.log(time)
+      return time;
+    }
+  }
+  if(typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
+    module.exports = function(){
+      return new helper()
+    }
+  }else{
+    if(typeof PEM === "undefined") PEM = {}
+    PEM.helper = new helper()
+  }
+
+}())

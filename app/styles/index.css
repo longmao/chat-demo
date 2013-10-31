@@ -111,9 +111,44 @@ a:focus {
       -ms-transform: translate3d(0, 0, 0);
        -o-transform: translate3d(0, 0, 0);
           transform: translate3d(0, 0, 0);
-  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 7px rgba(0, 0, 0, 0.15);
-     -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 7px rgba(0, 0, 0, 0.15);
-          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 2px 7px rgba(0, 0, 0, 0.15);
+  -webkit-box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+}
+
+.chat-container .profile {
+  padding: 15px 20px;
+  overflow: hidden;
+  border-bottom: 1px solid #d5d5d5;
+}
+
+.chat-container .profile img {
+  float: left;
+}
+
+.chat-container .profile .cont {
+  margin-top: -4px;
+  margin-left: 60px;
+  overflow: hidden;
+}
+
+.chat-container .profile .cont .ops {
+  float: right;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.chat-container .profile .cont p {
+  margin: 0;
+}
+
+.chat-container .profile .cont .screen_name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+}
+
+.chat-container .profile .cont .desc {
+  color: #999;
 }
 
 .chat-container .col-md-3,
@@ -125,39 +160,9 @@ a:focus {
 
 .chat-container .col-md-3 {
   width: 232px;
-  height: 700px;
+  height: 780px;
   background-color: #f5f5f5;
   border-right: 1px solid #d8d8d8;
-}
-
-.chat-container .col-md-3 .myself-block {
-  padding: 15px 20px;
-  overflow: hidden;
-  border-bottom: 1px solid #d5d5d5;
-}
-
-.chat-container .col-md-3 .myself-block img {
-  float: left;
-}
-
-.chat-container .col-md-3 .myself-block .cont {
-  margin-top: -4px;
-  margin-left: 60px;
-  overflow: hidden;
-}
-
-.chat-container .col-md-3 .myself-block .cont p {
-  margin: 0;
-}
-
-.chat-container .col-md-3 .myself-block .cont .screen_name {
-  font-size: 18px;
-  font-weight: bold;
-  color: #666;
-}
-
-.chat-container .col-md-3 .myself-block .cont .desc {
-  color: #999;
 }
 
 .chat-container .col-md-9 {
@@ -168,61 +173,97 @@ a:focus {
   display: none;
 }
 
-.chat-container .chat-msg-panel {
+.chat-container .chat-msg-panel,
+.chat-container .chat-msg-history {
   height: 600px;
   overflow-y: auto;
   border-bottom: 1px solid #d8d8d8;
 }
 
-.chat-container .chat-msg-panel ul {
+.chat-container .chat-msg-panel ul,
+.chat-container .chat-msg-history ul {
   padding: 0;
   list-style: none;
 }
 
-.chat-container .chat-msg-panel ul li.sysInfo {
+.chat-container .chat-msg-panel ul li.sysInfo,
+.chat-container .chat-msg-history ul li.sysInfo {
   font-size: 13px;
   background-color: #f5f5f5;
 }
 
-.chat-container .chat-msg-panel ul li.sysInfo p {
+.chat-container .chat-msg-panel ul li.sysInfo p,
+.chat-container .chat-msg-history ul li.sysInfo p {
   margin: 0;
 }
 
-.chat-container .chat-msg-panel ul li {
-  padding: 15px;
+.chat-container .chat-msg-panel ul li,
+.chat-container .chat-msg-history ul li {
+  padding: 10px 20px;
 }
 
-.chat-container .chat-msg-panel ul li .avatar {
+.chat-container .chat-msg-panel ul li .avatar,
+.chat-container .chat-msg-history ul li .avatar {
   float: left;
   padding-right: 10px;
 }
 
-.chat-container .chat-msg-panel ul li .cont {
-  margin-left: 60px;
+.chat-container .chat-msg-panel ul li .cont,
+.chat-container .chat-msg-history ul li .cont {
+  margin-left: 0;
 }
 
-.chat-container .chat-msg-panel ul li .cont h3 {
+.chat-container .chat-msg-panel ul li .cont h3,
+.chat-container .chat-msg-history ul li .cont h3 {
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
 }
 
-.chat-container .chat-msg-panel ul li .cont span.time {
+.chat-container .chat-msg-panel ul li .cont span.time,
+.chat-container .chat-msg-history ul li .cont span.time {
   margin-left: 10px;
   color: #999;
 }
 
-.chat-container .chat-msg-panel ul li .cont p {
+.chat-container .chat-msg-panel ul li .cont p,
+.chat-container .chat-msg-history ul li .cont p {
   margin-top: 4px;
+  margin-bottom: 0;
   color: #666;
 }
 
-.chat-container .chat-msg-panel ul li.last {
+.chat-container .chat-msg-panel ul li.first,
+.chat-container .chat-msg-history ul li.first {
   padding-top: 15px;
 }
 
-.chat-container .chat-msg-panel ul li.self {
+.chat-container .chat-msg-panel ul li.last,
+.chat-container .chat-msg-history ul li.last {
+  padding-top: 15px;
+}
+
+.chat-container .chat-msg-panel ul li.self,
+.chat-container .chat-msg-history ul li.self {
   background-color: #f5f5f5;
+}
+
+.chat-container .chat-msg-history {
+  height: 698px;
+  overflow-y: visible;
+  border-bottom: 0 none;
+}
+
+.chat-container .chat-msg-history p.header {
+  padding: 15px 20px;
+  margin-bottom: 0;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.chat-container .chat-msg-history ul {
+  height: 650px;
+  overflow-y: auto;
 }
 
 .chat-container .chat-msg-editor {
