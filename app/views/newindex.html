@@ -7,6 +7,7 @@
 
 <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
 <link rel="stylesheet" type="text/css" href="styles/index.css">
+<link rel="stylesheet" type="text/css" href="styles/font-awesome.css">
 </head>
 <body>
 
@@ -41,6 +42,14 @@
               <div class="chat-msg-editor">
                 <p style="help_text">你好，<span id="from"></span>，你正在对<span id="to"></span>说: (可按回车键发送)</p>
                 <form class="form-inline" id="chatForm" role="form">
+                  <a href="javascript:;" style="
+                      color: #666;
+                      padding: 2px 10px 0 0;
+                      float: left;
+                  "><i class="fa fa-smile-o fa-2" style="
+                      font-size: 28px;width:24px;
+                  "></i>
+                  </a>
                   <div class="form-group">
                     <label class="sr-only" for="chatInputInfo">聊天信息</label>
                     <input type="text" class="form-control" id="chatInputInfo" placeholder="请输入信息">
