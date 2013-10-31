@@ -14,7 +14,7 @@
     <div class="chat-container row">
 
       <div class="col-md-3">
-        <div class="myself-block">
+        <div class="profile">
           <img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image">
             <div class="cont">
               <p class="screen_name"><%= user %></p>
@@ -29,17 +29,27 @@
 
       <div class="col-md-9" role="main">
         <div class="chat-msg-container" id="chat-msg-container">
-          <div class="chat-msg-panel">
+          <div class="profile" id="profile_to">
+            
           </div>
-          <div class="chat-msg-editor">
-            <p style="help_text">你好，<span id="from"></span>，你正在对<span id="to"></span>说: (可按回车键发送)</p>
-            <form class="form-inline" id="chatForm" role="form">
-              <div class="form-group">
-                <label class="sr-only" for="chatInputInfo">聊天信息</label>
-                <input type="text" class="form-control" id="chatInputInfo" placeholder="请输入信息">
+          <div>
+            <div class="chat-msg-history" style="display:none">
+            </div>
+            <div class="chat-msg-content">
+              <div class="chat-msg-panel">
               </div>
-              <button type="submit" class="btn btn-default">发送</button>
-            </form>
+              <div class="chat-msg-editor">
+                <p style="help_text">你好，<span id="from"></span>，你正在对<span id="to"></span>说: (可按回车键发送)</p>
+                <form class="form-inline" id="chatForm" role="form">
+                  <div class="form-group">
+                    <label class="sr-only" for="chatInputInfo">聊天信息</label>
+                    <input type="text" class="form-control" id="chatInputInfo" placeholder="请输入信息">
+                  </div>
+                  <button type="submit" class="btn btn-default">发送</button>
+                </form>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -52,8 +62,6 @@
 <script type="text/javascript" src="scripts/PEM.resource.js"></script>
 <script type="text/javascript" src="scripts/PEM.helper.js"></script>
 <script type="text/javascript" src="scripts/PEM.util.js"></script>
-
-
 <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="scripts/chat.js"></script>

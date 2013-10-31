@@ -1,7 +1,5 @@
 (function(){
-
   if(typeof PEM === "undefined") PEM = {}
-
   PEM.util = {
     init:function(){
       $.extend($.fn, {

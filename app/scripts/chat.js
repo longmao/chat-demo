@@ -1,5 +1,5 @@
 (function() {
-    var from, socket, to,
+    var from, socket, to,templ_chat_timeline,templ_chat_profile
         $win = $(window),
         $body = $("body"),
         $users_list = $("#users_list"),
@@ -7,12 +7,19 @@
     socket = io.connect();
     from = $.cookie("user");
     to = "";
-    templ = doT.template('' +
+    templ_chat_profile = doT.template('' +
+      '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image" style="">' +
+      '<div class="cont" >' +
+        '<div class="ops">' +
+          '<a href="#" class="skanHistory" data-user-to="{{=it.screen_name}}">聊天记录</a>' +
+        '</div>' +
+        '<p class="screen_name" ng-model="screen_name_to">{{=it.screen_name}}</p>' + 
+        '<p class="desc">{{=it.description}}</p>' +
+      '</div>'
+    );
+    templ_chat_timeline = doT.template('' +
       '{{? !it.sysInfo }}' +
         '<li class="{{=it.self ? "self" : ""}}">' +
-          '<div class="avatar">' +
-            '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image">' +
-          '</div>' +
           '<div class="cont">' +
             '<h3>' +
               '<span class="screen_name">{{=it.screen_name}}</span>' +
@@ -37,6 +44,7 @@
           $ul.append(
             '<li data-user="' + user.name + '" class="online"><a href="javascript:;"><img width="30" height="30" class="img-rounded" src="images/default-30.gif" alt="placeholder+image"> ' + user.name + ' <span class="badge pull-right" style="display:none"></span></a></li>');
         })
+        $ul.find("li:first").addClass("first")
         $ul.find("li:last").addClass("last")
         //如果当前用户重新上线，设置用户为选中状态
         if(to) $ul.find("li[data-user='" + to + "']").addClass("active")
@@ -55,12 +63,19 @@
         $("#to").html(to);
         $("#from").parent().css("visibility","visible")
       },
+      renderProfile:function(data){
+        var $profile_to = $("#profile_to")
+        $profile_to.html(templ_chat_profile({
+          screen_name:data.to,
+          description:"description here"
+        }))
+      },
       appendChatMsg:function(data){
         var id = data.from === from ? to : data.from
         var $chat_msg_panel = $(".chat-msg-panel");
         var $contents = $chat_msg_panel.find("#contents_" + id);
 
-        $contents.append(templ({
+        $contents.append(templ_chat_timeline({
           sysInfo:data.sysInfo || false,
           self:data.from === from,
           screen_name: data.from,
@@ -68,6 +83,44 @@
           msg:data.msg
         }));
         PEM.util.scrollTop($chat_msg_panel,$contents.height())
+      },
+      skanHistory: function(params){
+        var $chat_msg_history = $(".chat-msg-history");
+        var $ul = $("<ul></ul>")
+        var $div
+        $.getJSON("/history/"+params.to,function(datas){
+          _.forEach(datas,function(data){
+            $ul.append(
+                templ_chat_timeline({
+                  sysInfo:data.sysInfo || false,
+                  self:data.from === from,
+                  screen_name: data.from,
+                  date:data.date,
+                  msg:data.msg
+                })
+              )
+          })
+
+          $("ul.users_list").find(".active").removeClass("active")
+
+          $div = $ul
+            .before(
+              $('<p class="header">以下是你与<span class="to"></span>的聊天记录，<a href="javascript:;" class="">返回聊天</a></p>')
+                .find(".to").text(params.to).end()
+                .find("a").click(function(e){
+                  console.log(344)
+                  e.preventDefault()
+                  $("ul.users_list").find("li[data-user='" + params.to + "']").click()
+              }).end()
+            )
+
+          $chat_msg_history
+            .html($div)
+            .show()
+            .siblings(".chat-msg-content")
+            .hide()
+
+        })
       },
       updateUnread:function(data){
         var $list = $users_list.find("li[data-user='" + data.from + "']");
@@ -81,6 +134,7 @@
           e.preventDefault();
           var $this = $(this);
           var $contents;
+          var $chat_msg_content = $(".chat-msg-content")
           var $chat_msg_panel = $(".chat-msg-panel");
           //设置被双击的用户为说话对象
           to = $this.attr('data-user');
@@ -88,12 +142,26 @@
           $this.addClass("active").siblings("li").removeClass("active")
           $this.find(".badge").text("").hide();
           PEM.chat.showSayTo();
+          PEM.chat.renderProfile({to:to});
           $chat_msg_container.show()
+            .find(".chat-msg-content").show()
+            .siblings().hide()
+            .end();
           $contents.show().siblings("ul.contents").hide()
           $("form#chatForm").find("input[type='text']").focus()
           PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
 
+        $chat_msg_container.on("click",".skanHistory",function(e){
+          e.preventDefault();
+          var $that = $(this),
+              data_user_from = from,
+              data_user_to = $that.attr("data-user-to")
+          PEM.chat.skanHistory({
+            to:data_user_to,
+            from:data_user_from
+          })
+        })
 
         //发话
         $("form#chatForm").submit(function(e) {
@@ -169,7 +237,6 @@
 
         socket.on('offline', function (data) {
           //
-          console.log("offline")
           if(data.user === to) {
             PEM.chat.appendChatMsg({
               sysInfo: true,
