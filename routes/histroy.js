@@ -12,7 +12,7 @@ module.exports = function(app,chatModel) {
                   from : {$in: [ from, to]},
                   to : {$in: [ from, to]}
                 })
-    query.limit(8)
+    //query.limit(8)
     query.exec(function(err,items){
         var data = []
         _.forEach(items,function(item){

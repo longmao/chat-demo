@@ -1,5 +1,6 @@
 (function() {
-    var from, socket, to,templ_chat_timeline,templ_chat_profile
+    var from, socket, to,templ_chat_timeline,templ_chat_profile,
+        $chatForm = $("#chatForm"),
         $win = $(window),
         $body = $("body"),
         $users_list = $("#users_list"),
@@ -11,7 +12,7 @@
       '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image" style="">' +
       '<div class="cont" >' +
         '<div class="ops">' +
-          '<a href="#" class="skanHistory" data-user-to="{{=it.screen_name}}">聊天记录</a>' +
+          '<a href="#" class="skanHistory" data-user-to="{{=it.screen_name}}"><i class="fa fa-clock-o" style="margin-right: 2px;"></i>聊天记录</a>' +
         '</div>' +
         '<p class="screen_name" ng-model="screen_name_to">{{=it.screen_name}}</p>' + 
         '<p class="desc">{{=it.description}}</p>' +
@@ -42,7 +43,7 @@
         var $ul = $("<ul></ul>")
         _.forEach(users,function(user){
           $ul.append(
-            '<li data-user="' + user.name + '" class="online"><a href="javascript:;"><img width="30" height="30" class="img-rounded" src="images/default-30.gif" alt="placeholder+image"> ' + user.name + ' <span class="badge pull-right" style="display:none"></span></a></li>');
+            '<li data-user="' + user.name + '" class="online"><a href="javascript:;"><i class="fa fa-circle-o"></i><img width="30" height="30" class="img-rounded" src="images/default-30.gif" alt="placeholder+image"> ' + user.name + ' <span class="badge pull-right" style="display:none"></span></a></li>');
         })
         $ul.find("li:first").addClass("first")
         $ul.find("li:last").addClass("last")
@@ -108,7 +109,6 @@
               $('<p class="header">以下是你与<span class="to"></span>的聊天记录，<a href="javascript:;" class="">返回聊天</a></p>')
                 .find(".to").text(params.to).end()
                 .find("a").click(function(e){
-                  console.log(344)
                   e.preventDefault()
                   $("ul.users_list").find("li[data-user='" + params.to + "']").click()
               }).end()
@@ -164,7 +164,7 @@
         })
 
         //发话
-        $("form#chatForm").submit(function(e) {
+        $chatForm.submit(function(e) {
           e.preventDefault();
           var $chatForm = $(this),
               $chatForm_text = $chatForm.find("input[type='text']");
@@ -184,9 +184,34 @@
           $chatForm_text.val("").focus();
         });
 
+        var $emotions = $("<ul class='row emotions_list'></ul>"),$div = $("<div></div>")
+        _.forEach(PEM.helper.getEmotions(),function(emotion){
+          $emotions.append(""
+            + "<li>"
+              + "<a href='javascript:;'>"
+                + "<img width=22 height=20 src='/images/emotions/" + emotion[0] + ".png' title='" + emotion[1] + "'/>"
+              + "</a>"
+            + "</li>")
+        })
+        $chatForm.on("click",".emotions_list li",function(){
+          console.log(11)
+          var $a = $(this).find("a")
+          $chatForm
+            .find("textarea").val($a.html())
+            .end()
+            .find(".emotions_popover").popover("hide")
+        })
+        $div.append($emotions)
+        $chatForm.find(".emotions_popover").popover({
+            html: true,
+            placement: "top",
+            content: $div.html()
+          })
+
         $(window).bind('beforeunload',function(){
           //return '刷新页面将会改变你的在线状态，是否要继续？';
         });
+
       },
       bindSocket:function(){
         socket.emit("online", {
@@ -201,7 +226,7 @@
             PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
-              msg: '系统消息：用户' + data.user + '上线了',
+              msg: '<i class="fa fa-bullhorn" style="margin-right: 4px;"></i>系统消息：用户' + data.user + '上线了',
               to: to
             })
           }
@@ -241,7 +266,7 @@
             PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
-              msg: '系统消息：用户' + data.user + '下线了',
+              msg: '<i class="fa fa-bullhorn" style="margin-right: 4px;"></i>系统消息：用户' + data.user + '下线了',
               to: to
             })
           }
