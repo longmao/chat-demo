@@ -2,7 +2,7 @@
   @unclelongmao
 
  
-  聊天系统是基于nodejs + socket.io + expressJS技术实现，
+  <pre>聊天系统是基于nodejs + socket.io + expressJS技术实现，
   前端UI想突出简洁，选取了流行的框架bootstrap3.0。
   模版采用do.T
   目前已实现的功能有（2013.11.1）：
@@ -17,4 +17,5 @@
     
    
   项目演示地址：http://chat001.ap01.aws.af.cm
+  </pre>
 ===============
