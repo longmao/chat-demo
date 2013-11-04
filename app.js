@@ -67,7 +67,7 @@ app.post('/signin', function (req, res) {
 var server = http.createServer(app);
 var i = 1;
 var io = require('socket.io').listen(server);
-//io.set('transports', ['xhr-polling']);
+io.set('transports', ['xhr-polling']);
 io.sockets.on('connection', function (socket) {
 
   //有人上线
@@ -113,7 +113,7 @@ io.sockets.on('connection', function (socket) {
         msg : data.msg
       })
 
-      chat.save(function(err){
+      chat.save(function(err,data){
         if (err) {
           return err;
         }

@@ -1,0 +1,2 @@
+/*! chat-demo 2013-10-31 */
+!function(){var a=function(){var a=this;a.now=function(a){var a=a||new Date,b=a.getFullYear()+"-"+(a.getMonth()+1)+"-"+a.getDate()+" "+a.getHours()+":"+(a.getMinutes()<10?"0"+a.getMinutes():a.getMinutes())+":"+(a.getSeconds()<10?"0"+a.getSeconds():a.getSeconds());return console.log(b),b}};"undefined"!=typeof module&&"undefined"!=typeof module.exports?module.exports=function(){return new a}:("undefined"==typeof PEM&&(PEM={}),PEM.helper=new a)}();
