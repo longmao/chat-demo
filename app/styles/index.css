@@ -236,6 +236,11 @@ a:focus {
   color: #666;
 }
 
+.chat-container .chat-msg-panel ul li .cont p img,
+.chat-container .chat-msg-history ul li .cont p img {
+  margin-right: 2px;
+}
+
 .chat-container .chat-msg-panel ul li.first,
 .chat-container .chat-msg-history ul li.first {
   padding-top: 15px;
@@ -289,6 +294,11 @@ a:focus {
 .chat-container .chat-msg-editor a.emotions_popover .fa-smile-o {
   width: 24px;
   font-size: 28px;
+}
+
+.chat-container .chat-msg-editor a.emotions_popover:hover,
+.chat-container .chat-msg-editor a.emotions_popover.hovered {
+  color: #EBD100;
 }
 
 .chat-container .chat-msg-editor .emotions_list {
