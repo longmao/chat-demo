@@ -27,6 +27,6 @@
 
         
        
-      项目演示地址：<a target="_blank" href="http://chat001.ap01.aws.af.cm">http://chat001.ap01.aws.af.cm</a>
+      项目演示地址：http://chat001.ap01.aws.af.cm
   </pre>
 ===============
