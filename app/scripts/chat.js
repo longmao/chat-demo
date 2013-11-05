@@ -1,8 +1,8 @@
 (function() {
+    window.$win = $(window)
+    window.$body = $("body")
     var from, socket, to,templ_chat_timeline,templ_chat_profile,
         $chatForm = $("#chatForm"),
-        $win = $(window),
-        $body = $("body"),
         $users_list = $("#users_list"),
         $chat_msg_container = $("#chat-msg-container")
     socket = io.connect();
@@ -130,6 +130,8 @@
         $badge.text(++unread_num).show()
       },
       bindEvent:function(){
+
+
         $users_list.on("click","li",function(e) {
           e.preventDefault();
           var $this = $(this);
@@ -148,7 +150,7 @@
             .siblings().hide()
             .end();
           $contents.show().siblings("ul.contents").hide()
-          $("form#chatForm").find("input[type='text']").focus()
+          $("form#chatForm").find("input[type='text']").val("").focus()
           PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
 
@@ -174,7 +176,7 @@
           //把发送的信息先添加到自己的浏览器 DOM 中
           PEM.chat.appendChatMsg({
             from: from,
-            msg: msg,
+            msg: PEM.helper.replaceEmotions(msg),
             to: to
           })
 
@@ -188,29 +190,60 @@
         _.forEach(PEM.helper.getEmotions(),function(emotion){
           $emotions.append(""
             + "<li>"
-              + "<a href='javascript:;'>"
+              + "<a href='javascript:;' data-emotion='" + emotion[2] + "'>"
                 + "<img width=22 height=20 src='/images/emotions/" + emotion[0] + ".png' title='" + emotion[1] + "'/>"
               + "</a>"
             + "</li>")
         })
+
+        var $input_text = $chatForm.find("input[type='text']"),timeout;
+        $input_text.on("keyup mousedown mousemove mouseup",function(e){
+          var textrange = $(this).textrange();
+          $(this).attr("data_textrange",textrange.start)
+        })
+
+
+        $input_text.on("keydown",function(e){
+          clearTimeout(timeout)
+          socket.emit("writing", {from: from,to: to})
+        })
+
+        $input_text.on("keyup",function(e){
+          timeout = setTimeout(function(){
+                      socket.emit("writed", {from: from,to: to})
+                    },1000)
+        })
+
         $chatForm.on("click",".emotions_list li",function(){
-          console.log(11)
           var $a = $(this).find("a")
+          var $input_text = $chatForm.find("input[type='text']");
+          $input_text.textrange('setcursor', $input_text.attr("data_textrange"));
+          //return
+          PEM.util.insertAtCursor($input_text[0],$a.attr("data-emotion"))
+          //console.log($("input#chatInputInfo").attr("data_textrange"))
+          $input_text.attr("data_textrange",parseInt($("input#chatInputInfo").attr("data_textrange")) + 4)
           $chatForm
-            .find("textarea").val($a.html())
-            .end()
-            .find(".emotions_popover").popover("hide")
+            .find(".emotions_popover").trigger("click")
         })
         $div.append($emotions)
-        $chatForm.find(".emotions_popover").popover({
+        $chatForm
+          .find(".emotions_popover")
+          .popover({
             html: true,
             placement: "top",
             content: $div.html()
+          })
+          .on('show.bs.popover',function(e){
+            $(this).addClass("hovered")
+          })
+          .on('hide.bs.popover',function(e){
+            $(this).removeClass("hovered")
           })
 
         $(window).bind('beforeunload',function(){
           //return '刷新页面将会改变你的在线状态，是否要继续？';
         });
+
 
       },
       bindSocket:function(){
@@ -272,6 +305,18 @@
           }
           PEM.chat.flushUsers(data.users);
         });
+
+        socket.on("writing",function(data){
+          if(data.from === to ){
+            $("#writing").show()
+          }
+        })
+
+        socket.on("writed",function(data){
+          if(data.from === to){
+            $("#writing").hide()
+          }
+        })
       },
       init:function(){
         PEM.util.init();

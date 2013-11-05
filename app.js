@@ -7,6 +7,7 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
 var app = express();
+var helper = require('./app/scripts/PEM.helper.js')();
 
 
 var chatModel = require("./model/chat")
@@ -98,6 +99,7 @@ io.sockets.on('connection', function (socket) {
       clients.forEach(function (client) {
         if (client.name == data.to) {
           //触发该用户客户端的 say 事件
+          data.msg = helper.replaceEmotions(data.msg)
           client.emit('say', data);
         }
       });
@@ -110,7 +112,7 @@ io.sockets.on('connection', function (socket) {
       var chat = new chatModel({
         from : data.from,
         to : data.to,
-        msg : data.msg
+        msg : helper.replaceEmotions(data.msg)
       })
 
       chat.save(function(err,data){
@@ -138,6 +140,29 @@ io.sockets.on('connection', function (socket) {
       socket.broadcast.emit('offline', {users: users, user: socket.name});
     }
   });
+
+  //提示输入状态
+  socket.on("writing",function(data){
+    var clients = io.sockets.clients();
+    //遍历找到该用户
+    clients.forEach(function (client) {
+      if (client.name == data.to) {
+        client.emit('writing', data);
+      }
+    });
+  })
+
+  //提示输入状态
+  socket.on("writed",function(data){
+    var clients = io.sockets.clients();
+    //遍历找到该用户
+    clients.forEach(function (client) {
+      if (client.name == data.to) {
+        client.emit('writed', data);
+      }
+    });
+  })
+
 });
 
 module.exports = app;
