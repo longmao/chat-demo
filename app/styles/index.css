@@ -238,7 +238,7 @@ a:focus {
 
 .chat-container .chat-msg-panel ul li .cont p img,
 .chat-container .chat-msg-history ul li .cont p img {
-  margin-right: 2px;
+  margin-right: 4px;
 }
 
 .chat-container .chat-msg-panel ul li.first,
