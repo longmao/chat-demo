@@ -285,6 +285,10 @@ a:focus {
   visibility: hidden;
 }
 
+.chat-container .chat-msg-editor p #writing {
+  margin-left: 30px;
+}
+
 .chat-container .chat-msg-editor a.emotions_popover {
   float: left;
   padding: 2px 10px 0 0;

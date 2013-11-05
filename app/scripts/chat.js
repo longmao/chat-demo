@@ -150,7 +150,7 @@
             .siblings().hide()
             .end();
           $contents.show().siblings("ul.contents").hide()
-          $("form#chatForm").find("input[type='text']").focus()
+          $("form#chatForm").find("input[type='text']").val("").focus()
           PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
 
@@ -196,10 +196,22 @@
             + "</li>")
         })
 
-        var $input_text = $chatForm.find("input[type='text']");
+        var $input_text = $chatForm.find("input[type='text']"),timeout;
         $input_text.on("keyup mousedown mousemove mouseup",function(e){
           var textrange = $(this).textrange();
           $(this).attr("data_textrange",textrange.start)
+        })
+
+
+        $input_text.on("keydown",function(e){
+          clearTimeout(timeout)
+          socket.emit("writing", {from: from,to: to})
+        })
+
+        $input_text.on("keyup",function(e){
+          timeout = setTimeout(function(){
+                      socket.emit("writed", {from: from,to: to})
+                    },1000)
         })
 
         $chatForm.on("click",".emotions_list li",function(){
@@ -231,6 +243,7 @@
         $(window).bind('beforeunload',function(){
           //return '刷新页面将会改变你的在线状态，是否要继续？';
         });
+
 
       },
       bindSocket:function(){
@@ -292,6 +305,18 @@
           }
           PEM.chat.flushUsers(data.users);
         });
+
+        socket.on("writing",function(data){
+          if(data.from === to ){
+            $("#writing").show()
+          }
+        })
+
+        socket.on("writed",function(data){
+          if(data.from === to){
+            $("#writing").hide()
+          }
+        })
       },
       init:function(){
         PEM.util.init();

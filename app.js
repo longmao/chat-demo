@@ -140,6 +140,29 @@ io.sockets.on('connection', function (socket) {
       socket.broadcast.emit('offline', {users: users, user: socket.name});
     }
   });
+
+  //提示输入状态
+  socket.on("writing",function(data){
+    var clients = io.sockets.clients();
+    //遍历找到该用户
+    clients.forEach(function (client) {
+      if (client.name == data.to) {
+        client.emit('writing', data);
+      }
+    });
+  })
+
+  //提示输入状态
+  socket.on("writed",function(data){
+    var clients = io.sockets.clients();
+    //遍历找到该用户
+    clients.forEach(function (client) {
+      if (client.name == data.to) {
+        client.emit('writed', data);
+      }
+    });
+  })
+
 });
 
 module.exports = app;
