@@ -46,12 +46,11 @@
       }
     },
     setTimeCounter:function($el,data){
-      console.log($el)
+      if(typeof PEM.data.timerCounterInterval[data.to] !== "undefined") return
       var $hour = $el.find("#hour"),
           $minute = $el.find("#minute"),
           $second = $el.find("#second"),
           counterSecond = function(){
-            console.log($second.text())
             var second = parseInt($second.text())
             ++second;
             if(second > 59){
@@ -83,6 +82,7 @@
     },
     clearTimeCounter:function(data){
       clearInterval(PEM.data.timerCounterInterval[data.to])
+      delete PEM.data.timerCounterInterval[data.to]
     },
     initTimeCounter:function($el){
       var $hour = $el.find("#hour"),
@@ -102,7 +102,7 @@
           second = parseInt(array[2]);
       time_str += hour > 0 && hour + "小时" || ""
       time_str += minute > 0 && minute + "分钟" || ""
-      time_str += second > 0 && second + "秒" || ""
+      time_str += second > 0 && second + "秒" || "0秒"
       return time_str
     }
 
