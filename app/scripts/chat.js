@@ -9,13 +9,20 @@
     from = $.cookie("user");
     to = "";
     templ_chat_profile = doT.template('' +
-      '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image" style="">' +
-      '<div class="cont" >' +
-        '<div class="ops">' +
-          '<a href="#" class="skanHistory" data-user-to="{{=it.screen_name}}"><i class="fa fa-clock-o" style="margin-right: 2px;"></i>聊天记录</a>' +
-        '</div>' +
-        '<p class="screen_name" ng-model="screen_name_to">{{=it.screen_name}}</p>' + 
-        '<p class="desc">{{=it.description}}</p>' +
+      '<div class="profile_{{=it.screen_name}} profile_user" style="display:none">' + 
+        '<img width="50" height="50" class="img-rounded" src="images/default-50.gif" alt="placeholder+image" style="">' +
+        '<div class="cont" style="position: relative;">' +
+          '<div id="timer" class="timerCount timerCount_{{=it.screen_name}}" style="position: absolute;left: 200px;font-size: 30px;">' +
+            '<span id="hour">00</span>:' +
+            '<span id="minute">00</span>:' +
+            '<span id="second">00</span>' +
+          '</div>' +
+          '<div class="ops">' +
+            '<a href="#" class="skanHistory" data-user-to="{{=it.screen_name}}"><i class="fa fa-clock-o" style="margin-right: 2px;"></i>聊天记录</a>' +
+          '</div>' +
+          '<p class="screen_name" >{{=it.screen_name}}</p>' + 
+          '<p class="desc">{{=it.description}}</p>' +
+        '</div>' + 
       '</div>'
     );
     templ_chat_timeline = doT.template('' +
@@ -56,7 +63,6 @@
         for (var i in users) {
           $div.append("<ul class='contents' style='display:none' id='contents_" + users[i].name + "'></ul>")
         }
-        //$div.append("<ul class='contents' style='' id='contents_all'> </ul>");
         $(".chat-msg-panel").html($div.html())
       },
       showSayTo:function(){
@@ -66,10 +72,19 @@
       },
       renderProfile:function(data){
         var $profile_to = $("#profile_to")
-        $profile_to.html(templ_chat_profile({
-          screen_name:data.to,
-          description:"description here"
-        }))
+        var $profile_users = $profile_to.find(".profile_user")
+        var $profile_user_to = $profile_to.find(".profile_"+data.to)
+        $profile_users.hide();
+        if($profile_user_to.length){
+          $profile_user_to.fadeIn()
+        }else{
+          $profile_to.append(templ_chat_profile({
+            screen_name:data.to,
+            description:"description here"
+          }))
+          $profile_user_to = $profile_to.find(".profile_"+data.to)
+          $profile_user_to.fadeIn()
+        }
       },
       appendChatMsg:function(data){
         var id = data.from === from ? to : data.from
@@ -87,8 +102,8 @@
       },
       skanHistory: function(params){
         var $chat_msg_history = $(".chat-msg-history");
-        var $ul = $("<ul></ul>")
-        var $div
+        var $ul = $("<ul></ul>");
+        var $div;
         $.getJSON("/history/"+params.to,function(datas){
           _.forEach(datas,function(data){
             $ul.append(
@@ -116,7 +131,7 @@
 
           $chat_msg_history
             .html($div)
-            .show()
+            .fadeIn()
             .siblings(".chat-msg-content")
             .hide()
 
@@ -130,8 +145,6 @@
         $badge.text(++unread_num).show()
       },
       bindEvent:function(){
-
-
         $users_list.on("click","li",function(e) {
           e.preventDefault();
           var $this = $(this);
@@ -145,8 +158,10 @@
           $this.find(".badge").text("").hide();
           PEM.chat.showSayTo();
           PEM.chat.renderProfile({to:to});
+          //PEM.util.clearTimeCounter({to:to});
+          PEM.util.setTimeCounter($chat_msg_container.find(".timerCount_" + to),{to:to})
           $chat_msg_container.show()
-            .find(".chat-msg-content").show()
+            .find(".chat-msg-content").fadeIn()
             .siblings().hide()
             .end();
           $contents.show().siblings("ul.contents").hide()
@@ -294,12 +309,13 @@
         });
 
         socket.on('offline', function (data) {
-          //
           if(data.user === to) {
+            PEM.util.clearTimeCounter({to:to})
+            PEM.util.initTimeCounter($(".timerCount_" + to));
             PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
-              msg: '<i class="fa fa-bullhorn" style="margin-right: 4px;"></i>系统消息：用户' + data.user + '下线了',
+              msg: '<i class="fa fa-bullhorn" style="margin-right: 4px;"></i>系统消息：用户' + data.user + '下线了   （聊天记时' + PEM.util.timeToChinese($("#timer").text()) + '）',
               to: to
             })
           }

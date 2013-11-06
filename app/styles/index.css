@@ -119,6 +119,7 @@ a:focus {
 }
 
 .chat-container .profile {
+  height: 78px;
   padding: 15px 20px;
   overflow: hidden;
   border-bottom: 1px solid #d5d5d5;
@@ -238,7 +239,7 @@ a:focus {
 
 .chat-container .chat-msg-panel ul li .cont p img,
 .chat-container .chat-msg-history ul li .cont p img {
-  margin-right: 2px;
+  margin-right: 4px;
 }
 
 .chat-container .chat-msg-panel ul li.first,

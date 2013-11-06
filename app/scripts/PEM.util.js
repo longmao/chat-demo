@@ -1,6 +1,7 @@
 (function(){
   if(typeof window.console === "undefined") console = {}
   if(typeof PEM === "undefined") PEM = {}
+  PEM.data = {timerCounterInterval:{}};
   PEM.util = {
     init:function(){
       $.extend($.fn, {
@@ -43,7 +44,68 @@
       } else {
           myField.value += myValue;
       }
+    },
+    setTimeCounter:function($el,data){
+      if(typeof PEM.data.timerCounterInterval[data.to] !== "undefined") return
+      var $hour = $el.find("#hour"),
+          $minute = $el.find("#minute"),
+          $second = $el.find("#second"),
+          counterSecond = function(){
+            var second = parseInt($second.text())
+            ++second;
+            if(second > 59){
+              counterMinute()
+              $second.text("00")
+            }
+            else{
+              $second.text(second < 10 ? "0" + second : second)
+            }
+          },
+          counterMinute = function(){
+            var minute = parseInt($minute.text())
+            ++minute;
+            if(minute > 59){
+              counterHour();
+              $minute.text("00")
+            }else{
+              $minute.text(minute < 10 ? "0" + minute : minute)
+            }
+          },
+          counterHour = function(){
+            var hour = parseInt($hour.text())
+            ++hour;
+            $hour.text(hour < 10 ? "0" + minute : minute)
+          }
+      PEM.data.timerCounterInterval[data.to] = setInterval(function(){
+        counterSecond()
+      },1000)
+    },
+    clearTimeCounter:function(data){
+      clearInterval(PEM.data.timerCounterInterval[data.to])
+      delete PEM.data.timerCounterInterval[data.to]
+    },
+    initTimeCounter:function($el){
+      var $hour = $el.find("#hour"),
+          $minute = $el.find("#minute"),
+          $second = $el.find("#second");
+      $hour.text("00");
+      $minute.text("00");
+      $second.text("00")
+    },
+    timeToChinese:function(str){
+      var array = str.split(":")
+      if(array.length !== 3) return;
+
+      var time_str = "",
+          hour = parseInt(array[0]),
+          minute = parseInt(array[1]),
+          second = parseInt(array[2]);
+      time_str += hour > 0 && hour + "小时" || ""
+      time_str += minute > 0 && minute + "分钟" || ""
+      time_str += second > 0 && second + "秒" || "0秒"
+      return time_str
     }
+
   }
 
 }())
