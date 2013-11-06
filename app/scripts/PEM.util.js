@@ -1,7 +1,5 @@
 (function(){
-  if(typeof window.console === "undefined") console = {}
   if(typeof PEM === "undefined") PEM = {}
-  PEM.data = {timerCounterInterval:{}};
   PEM.util = {
     init:function(){
       $.extend($.fn, {
@@ -74,7 +72,7 @@
           counterHour = function(){
             var hour = parseInt($hour.text())
             ++hour;
-            $hour.text(hour < 10 ? "0" + minute : minute)
+            $hour.text(hour < 10 ? "0" + hour : hour)
           }
       PEM.data.timerCounterInterval[data.to] = setInterval(function(){
         counterSecond()

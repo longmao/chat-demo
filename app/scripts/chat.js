@@ -1,6 +1,4 @@
 (function() {
-    window.$win = $(window)
-    window.$body = $("body")
     var from, socket, to,templ_chat_timeline,templ_chat_profile,
         $chatForm = $("#chatForm"),
         $users_list = $("#users_list"),
@@ -145,6 +143,8 @@
         $badge.text(++unread_num).show()
       },
       bindEvent:function(){
+
+        //单击在线好友
         $users_list.on("click","li",function(e) {
           e.preventDefault();
           var $this = $(this);
@@ -168,7 +168,8 @@
           $("form#chatForm").find("input[type='text']").val("").focus()
           PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
-
+        
+        //察看聊天记录
         $chat_msg_container.on("click",".skanHistory",function(e){
           e.preventDefault();
           var $that = $(this),
@@ -211,7 +212,24 @@
             + "</li>")
         })
 
-        var $input_text = $chatForm.find("input[type='text']"),timeout;
+        var $input_text = $chatForm.find("input[type='text']"),timeout,once_handler=false;
+        var clickBodyHandler = function(e){
+
+          var $popover = $(".popover:visible")
+          var $popup = $(e.target).closest(".popup")
+
+          if($popup.length) return
+          if(!$popover.length) return
+          var popover_offset = $popover.offset(),
+              popover_width = $popover.width(),
+              popover_height = $popover.height()
+          if(
+            (e.clientX < popover_offset.left || e.clientX > popover_offset.left + popover_width)
+          ||(e.clientY < popover_offset.top || e.clientY > popover_offset.top + popover_height)
+          ){
+            $(".emotions_popover:visible").popover('hide')
+          }
+        }
         $input_text.on("keyup mousedown mousemove mouseup",function(e){
           var textrange = $(this).textrange();
           $(this).attr("data_textrange",textrange.start)
@@ -248,12 +266,22 @@
             placement: "top",
             content: $div.html()
           })
-          .on('show.bs.popover',function(e){
-            $(this).addClass("hovered")
+          .on('show.bs.popover',function(){
+            $(this).addClass("hovered");
+            //浮层以外点击hide浮层
+            if(!once_handler){
+              $body.on("click",function(e){clickBodyHandler(e)})
+              once_handler = true
+            }
           })
-          .on('hide.bs.popover',function(e){
+          .on('hide.bs.popover',function(){
             $(this).removeClass("hovered")
+            $body.off("click")
+            once_handler = false
           })
+
+
+
 
         $(window).bind('beforeunload',function(){
           //return '刷新页面将会改变你的在线状态，是否要继续？';
