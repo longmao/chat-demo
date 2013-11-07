@@ -151,6 +151,7 @@
           var $contents;
           var $chat_msg_content = $(".chat-msg-content")
           var $chat_msg_panel = $(".chat-msg-panel");
+          if($this.hasClass("active") && to === $this.attr('data-user')) return
           //设置被双击的用户为说话对象
           to = $this.attr('data-user');
           $contents = $("#contents_"+to);
@@ -202,19 +203,37 @@
           $chatForm_text.val("").focus();
         });
 
-        var $emotions = $("<ul class='row emotions_list'></ul>"),$div = $("<div></div>")
-        _.forEach(PEM.helper.getEmotions(),function(emotion){
-          $emotions.append(""
-            + "<li>"
-              + "<a href='javascript:;' data-emotion='" + emotion[2] + "'>"
-                + "<img width=22 height=20 src='/images/emotions/" + emotion[0] + ".png' title='" + emotion[1] + "'/>"
-              + "</a>"
-            + "</li>")
+
+
+        var $input_text = $chatForm.find("input[type='text']"),timeout;
+        $input_text
+          .on("keyup mousedown mousemove mouseup",function(e){
+            var textrange = $(this).textrange();
+            $(this).attr("data_textrange",textrange.start)
+          })
+          .on("keydown",function(e){
+            clearTimeout(timeout)
+            socket.emit("writing", {from: from,to: to})
+          })
+          .on("keyup",function(e){
+            timeout = setTimeout(function(){
+                socket.emit("writed", {from: from,to: to})
+              },1000)
+          })
+
+        $chatForm.on("click",".emotions_list li",function(){
+          var $a = $(this).find("a")
+          var $input_text = $chatForm.find("input[type='text']");
+          $input_text.textrange('setcursor', $input_text.attr("data_textrange"));
+          PEM.util.insertAtCursor($input_text[0],$a.attr("data-emotion"))
+          $input_text
+            .attr("data_textrange",parseInt($("input#chatInputInfo").attr("data_textrange")) + 4)
+          $chatForm
+            .find(".emotions_popover").trigger("click")
         })
 
-        var $input_text = $chatForm.find("input[type='text']"),timeout,once_handler=false;
+        var once_handler = false
         var clickBodyHandler = function(e){
-
           var $popover = $(".popover:visible")
           var $popup = $(e.target).closest(".popup")
 
@@ -230,41 +249,13 @@
             $(".emotions_popover:visible").popover('hide')
           }
         }
-        $input_text.on("keyup mousedown mousemove mouseup",function(e){
-          var textrange = $(this).textrange();
-          $(this).attr("data_textrange",textrange.start)
-        })
 
-
-        $input_text.on("keydown",function(e){
-          clearTimeout(timeout)
-          socket.emit("writing", {from: from,to: to})
-        })
-
-        $input_text.on("keyup",function(e){
-          timeout = setTimeout(function(){
-                      socket.emit("writed", {from: from,to: to})
-                    },1000)
-        })
-
-        $chatForm.on("click",".emotions_list li",function(){
-          var $a = $(this).find("a")
-          var $input_text = $chatForm.find("input[type='text']");
-          $input_text.textrange('setcursor', $input_text.attr("data_textrange"));
-          //return
-          PEM.util.insertAtCursor($input_text[0],$a.attr("data-emotion"))
-          //console.log($("input#chatInputInfo").attr("data_textrange"))
-          $input_text.attr("data_textrange",parseInt($("input#chatInputInfo").attr("data_textrange")) + 4)
-          $chatForm
-            .find(".emotions_popover").trigger("click")
-        })
-        $div.append($emotions)
         $chatForm
           .find(".emotions_popover")
           .popover({
             html: true,
             placement: "top",
-            content: $div.html()
+            content: PEM.util.getEmotionsHtml().html()
           })
           .on('show.bs.popover',function(){
             $(this).addClass("hovered");
@@ -279,9 +270,6 @@
             $body.off("click")
             once_handler = false
           })
-
-
-
 
         $(window).bind('beforeunload',function(){
           //return '刷新页面将会改变你的在线状态，是否要继续？';
@@ -307,9 +295,7 @@
             })
           }
 
-
           if(once) {
-            //
             PEM.chat.initChatPanel(data.users)
             once = false
           }else{
@@ -338,14 +324,14 @@
 
         socket.on('offline', function (data) {
           if(data.user === to) {
-            PEM.util.clearTimeCounter({to:to})
-            PEM.util.initTimeCounter($(".timerCount_" + to));
             PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
               msg: '<i class="fa fa-bullhorn" style="margin-right: 4px;"></i>系统消息：用户' + data.user + '下线了   （聊天记时' + PEM.util.timeToChinese($("#timer").text()) + '）',
               to: to
             })
+            PEM.util.clearTimeCounter({to:to})
+            PEM.util.initTimeCounter($(".timerCount_" + to));
           }
           PEM.chat.flushUsers(data.users);
         });
