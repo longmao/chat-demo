@@ -1,7 +1,5 @@
 (function(){
-  if(typeof window.console === "undefined") console = {}
   if(typeof PEM === "undefined") PEM = {}
-  PEM.data = {timerCounterInterval:{}};
   PEM.util = {
     init:function(){
       $.extend($.fn, {
@@ -74,7 +72,7 @@
           counterHour = function(){
             var hour = parseInt($hour.text())
             ++hour;
-            $hour.text(hour < 10 ? "0" + minute : minute)
+            $hour.text(hour < 10 ? "0" + hour : hour)
           }
       PEM.data.timerCounterInterval[data.to] = setInterval(function(){
         counterSecond()
@@ -104,6 +102,19 @@
       time_str += minute > 0 && minute + "分钟" || ""
       time_str += second > 0 && second + "秒" || "0秒"
       return time_str
+    },
+    getEmotionsHtml:function(){
+      var $emotions = $("<ul class='row emotions_list'></ul>"),$div = $("<div></div>")
+      _.forEach(PEM.helper.getEmotions(),function(emotion){
+        $emotions.append(""
+          + "<li>"
+            + "<a href='javascript:;' data-emotion='" + emotion[2] + "'>"
+              + "<img width=22 height=20 src='/images/emotions/" + emotion[0] + ".png' title='" + emotion[1] + "'/>"
+            + "</a>"
+          + "</li>")
+      })
+      $div.append($emotions)
+      return $div
     }
 
   }

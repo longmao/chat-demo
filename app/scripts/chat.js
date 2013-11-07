@@ -1,6 +1,4 @@
 (function() {
-    window.$win = $(window)
-    window.$body = $("body")
     var from, socket, to,templ_chat_timeline,templ_chat_profile,
         $chatForm = $("#chatForm"),
         $users_list = $("#users_list"),
@@ -145,12 +143,15 @@
         $badge.text(++unread_num).show()
       },
       bindEvent:function(){
+
+        //单击在线好友
         $users_list.on("click","li",function(e) {
           e.preventDefault();
           var $this = $(this);
           var $contents;
           var $chat_msg_content = $(".chat-msg-content")
           var $chat_msg_panel = $(".chat-msg-panel");
+          if($this.hasClass("active") && to === $this.attr('data-user')) return
           //设置被双击的用户为说话对象
           to = $this.attr('data-user');
           $contents = $("#contents_"+to);
@@ -168,7 +169,8 @@
           $("form#chatForm").find("input[type='text']").val("").focus()
           PEM.util.scrollTop($chat_msg_panel,$contents.height())
         })
-
+        
+        //察看聊天记录
         $chat_msg_container.on("click",".skanHistory",function(e){
           e.preventDefault();
           var $that = $(this),
@@ -201,58 +203,72 @@
           $chatForm_text.val("").focus();
         });
 
-        var $emotions = $("<ul class='row emotions_list'></ul>"),$div = $("<div></div>")
-        _.forEach(PEM.helper.getEmotions(),function(emotion){
-          $emotions.append(""
-            + "<li>"
-              + "<a href='javascript:;' data-emotion='" + emotion[2] + "'>"
-                + "<img width=22 height=20 src='/images/emotions/" + emotion[0] + ".png' title='" + emotion[1] + "'/>"
-              + "</a>"
-            + "</li>")
-        })
+
 
         var $input_text = $chatForm.find("input[type='text']"),timeout;
-        $input_text.on("keyup mousedown mousemove mouseup",function(e){
-          var textrange = $(this).textrange();
-          $(this).attr("data_textrange",textrange.start)
-        })
-
-
-        $input_text.on("keydown",function(e){
-          clearTimeout(timeout)
-          socket.emit("writing", {from: from,to: to})
-        })
-
-        $input_text.on("keyup",function(e){
-          timeout = setTimeout(function(){
-                      socket.emit("writed", {from: from,to: to})
-                    },1000)
-        })
+        $input_text
+          .on("keyup mousedown mousemove mouseup",function(e){
+            var textrange = $(this).textrange();
+            $(this).attr("data_textrange",textrange.start)
+          })
+          .on("keydown",function(e){
+            clearTimeout(timeout)
+            socket.emit("writing", {from: from,to: to})
+          })
+          .on("keyup",function(e){
+            timeout = setTimeout(function(){
+                socket.emit("writed", {from: from,to: to})
+              },1000)
+          })
 
         $chatForm.on("click",".emotions_list li",function(){
           var $a = $(this).find("a")
           var $input_text = $chatForm.find("input[type='text']");
           $input_text.textrange('setcursor', $input_text.attr("data_textrange"));
-          //return
           PEM.util.insertAtCursor($input_text[0],$a.attr("data-emotion"))
-          //console.log($("input#chatInputInfo").attr("data_textrange"))
-          $input_text.attr("data_textrange",parseInt($("input#chatInputInfo").attr("data_textrange")) + 4)
+          $input_text
+            .attr("data_textrange",parseInt($("input#chatInputInfo").attr("data_textrange")) + 4)
           $chatForm
             .find(".emotions_popover").trigger("click")
         })
-        $div.append($emotions)
+
+        var once_handler = false
+        var clickBodyHandler = function(e){
+          var $popover = $(".popover:visible")
+          var $popup = $(e.target).closest(".popup")
+
+          if($popup.length) return
+          if(!$popover.length) return
+          var popover_offset = $popover.offset(),
+              popover_width = $popover.width(),
+              popover_height = $popover.height()
+          if(
+            (e.clientX < popover_offset.left || e.clientX > popover_offset.left + popover_width)
+          ||(e.clientY < popover_offset.top || e.clientY > popover_offset.top + popover_height)
+          ){
+            $(".emotions_popover:visible").popover('hide')
+          }
+        }
+
         $chatForm
           .find(".emotions_popover")
           .popover({
             html: true,
             placement: "top",
-            content: $div.html()
+            content: PEM.util.getEmotionsHtml().html()
           })
-          .on('show.bs.popover',function(e){
-            $(this).addClass("hovered")
+          .on('show.bs.popover',function(){
+            $(this).addClass("hovered");
+            //浮层以外点击hide浮层
+            if(!once_handler){
+              $body.on("click",function(e){clickBodyHandler(e)})
+              once_handler = true
+            }
           })
-          .on('hide.bs.popover',function(e){
+          .on('hide.bs.popover',function(){
             $(this).removeClass("hovered")
+            $body.off("click")
+            once_handler = false
           })
 
         $(window).bind('beforeunload',function(){
@@ -279,9 +295,7 @@
             })
           }
 
-
           if(once) {
-            //
             PEM.chat.initChatPanel(data.users)
             once = false
           }else{
@@ -310,14 +324,14 @@
 
         socket.on('offline', function (data) {
           if(data.user === to) {
-            PEM.util.clearTimeCounter({to:to})
-            PEM.util.initTimeCounter($(".timerCount_" + to));
             PEM.chat.appendChatMsg({
               sysInfo: true,
               from: from,
               msg: '<i class="fa fa-bullhorn" style="margin-right: 4px;"></i>系统消息：用户' + data.user + '下线了   （聊天记时' + PEM.util.timeToChinese($("#timer").text()) + '）',
               to: to
             })
+            PEM.util.clearTimeCounter({to:to})
+            PEM.util.initTimeCounter($(".timerCount_" + to));
           }
           PEM.chat.flushUsers(data.users);
         });
