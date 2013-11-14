@@ -114,7 +114,6 @@ io.sockets.on('connection', function (socket) {
         to : data.to,
         msg : helper.replaceEmotions(data.msg)
       })
-
       chat.save(function(err,data){
         if (err) {
           return err;

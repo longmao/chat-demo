@@ -125,6 +125,14 @@ a:focus {
   border-bottom: 1px solid #d5d5d5;
 }
 
+.chat-container .profile .profile_user .cont {
+  margin-top: 0;
+}
+
+.chat-container .profile .profile_user .screen_name {
+  margin-top: -4px;
+}
+
 .chat-container .profile img {
   float: left;
 }
@@ -137,7 +145,6 @@ a:focus {
 
 .chat-container .profile .cont .ops {
   float: right;
-  margin-top: 4px;
   font-size: 13px;
 }
 
