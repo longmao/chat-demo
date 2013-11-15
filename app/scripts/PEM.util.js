@@ -49,7 +49,7 @@
           $minute = $el.find("#minute"),
           $second = $el.find("#second"),
           counterSecond = function(){
-            var second = parseInt($second.text())
+            var second = parseInt($second.text(),10)
             ++second;
             if(second > 59){
               counterMinute()
@@ -60,7 +60,7 @@
             }
           },
           counterMinute = function(){
-            var minute = parseInt($minute.text())
+            var minute = parseInt($minute.text(),10)
             ++minute;
             if(minute > 59){
               counterHour();
@@ -70,7 +70,7 @@
             }
           },
           counterHour = function(){
-            var hour = parseInt($hour.text())
+            var hour = parseInt($hour.text(),10)
             ++hour;
             $hour.text(hour < 10 ? "0" + hour : hour)
           }

@@ -34,3 +34,8 @@
     margin-bottom: 15px;
     padding: 7px 9px;
   }
+
+  .form-signin input[type="text"]{
+    background: #eae7e7 url(../images/icon.png) no-repeat 6px 6px;
+    padding-left: 40px;
+  }
